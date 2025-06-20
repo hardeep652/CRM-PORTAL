@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,6 +24,8 @@ import com.example.CRM.model.Lead.LeadStatus;
 import com.example.CRM.repository.UserRepo;
 import com.example.CRM.service.ClientService;
 import com.example.CRM.service.LeadService;
+
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -39,16 +42,30 @@ public class LeadController {
     private UserRepo userRepo; // Add this
 
     @PostMapping("/newLead")
-    public String generateLead(@RequestBody Lead lead) {
-
-        // 🔧 Temporary dummy assignment for testing
-        Users dummyUser = userRepo.findById(1L).orElse(null); // hardcoded ID
-        lead.setAssignedTo(dummyUser);
-
-        obj.saveLead(lead);
-
-        return "The lead was created: " + lead;
+public ResponseEntity<?> generateLead(
+    @Valid @RequestBody Lead lead,   // 🔥 Added @Valid
+    BindingResult result             // 🔥 Added BindingResult to catch errors
+) {
+    // Check for validation errors
+    if (result.hasErrors()) {
+        Map<String, String> errors = new HashMap<>();
+        result.getFieldErrors().forEach(
+            error -> errors.put(error.getField(), error.getDefaultMessage())
+        );
+        return ResponseEntity.badRequest().body(errors);
     }
+
+    // 🔧 Dummy assignment
+    Users dummyUser = userRepo.findById(1L).orElse(null); // hardcoded ID
+    lead.setAssignedTo(dummyUser);
+    lead.setCreatedAt(LocalDateTime.now());
+
+    obj.saveLead(lead);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body("The lead was created successfully: " + lead.getName());
+}
+
 
     @GetMapping("/myLeads")
     public List<Map<String, Object>> getdummyleads() {

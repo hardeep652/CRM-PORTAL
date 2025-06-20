@@ -1,24 +1,18 @@
 package com.example.CRM.model;
 
-
 import java.time.LocalDateTime;
 
-// import org.hibernate.type.EnumType; // Removed, use jakarta.persistence.EnumType instead
-
-import jakarta.persistence.Id; // ✅ JPA-based
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "leads")
 public class Lead {
-    
+
     public enum LeadStatus {
         NEW,
         CONTACTED,
@@ -30,14 +24,30 @@ public class Lead {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @NotBlank(message = "Name is required")
+    @Size(max = 100, message = "Name cannot exceed 100 characters")
     private String name;
+
+    @Email(message = "Invalid email address")
+    @NotBlank(message = "Email is required")
+    @Column(unique = true)
     private String email;
+
+    @NotBlank(message = "Phone number is required")
+    @Pattern(
+        regexp = "^[0-9]{10,15}$",
+        message = "Phone number must be between 10 and 15 digits"
+    )
     private String phone;
+
+    @Size(max = 100, message = "Company name cannot exceed 100 characters")
     private String company;
 
-    @Enumerated(jakarta.persistence.EnumType.STRING)
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "Status is required")
     private LeadStatus status;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -45,7 +55,8 @@ public class Lead {
     @JoinColumn(name = "assigned_to")
     private Users assignedTo;
 
-    
+    // ---------------- Getters and Setters ---------------- //
+
     public Long getId() {
         return id;
     }
@@ -86,7 +97,6 @@ public class Lead {
         this.company = company;
     }
 
-   
     public LeadStatus getStatus() {
         return status;
     }
@@ -119,11 +129,20 @@ public class Lead {
         this.assignedTo = assignedTo;
     }
 
+    // ---------------- toString() ---------------- //
+
     @Override
     public String toString() {
-        return "Lead [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", company=" + company
-                + ", status=" + status + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt
-                + ", assignedTo=" + assignedTo + "]";
+        return "Lead{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", company='" + company + '\'' +
+                ", status=" + status +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", assignedTo=" + assignedTo +
+                '}';
     }
-
 }

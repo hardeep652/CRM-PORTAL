@@ -4,16 +4,16 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-enum TaskStatus {
-    TODO,
-    IN_PROGRESS,
-    COMPLETED
-}
 
 @Entity
 @Table(name = "tasks")
 public class Task {
-
+    
+    public enum TaskStatus {
+        TODO,
+        IN_PROGRESS,
+        COMPLETED
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,7 +33,7 @@ public class Task {
     private Users assignedTo;
 
     @ManyToOne
-    @JoinColumn(name = "lead_id", nullable = true)
+    @JoinColumn(name = "related_lead", nullable = true)
     private Lead relatedLead;
 
     public Long getId() {

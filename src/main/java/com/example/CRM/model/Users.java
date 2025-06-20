@@ -1,10 +1,16 @@
 package com.example.CRM.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "employees")
@@ -14,15 +20,41 @@ public class Users {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name is required")
+    @Size(max = 100, message = "Name cannot exceed 100 characters")
     private String name;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
+    @Column(unique = true)
     private String email;
+
+    @Min(value = 1000000000L, message = "Phone number must have at least 10 digits")
+    @Max(value = 9999999999L, message = "Phone number cannot exceed 10 digits")
+    @Column(unique = true)  // ✅ Added unique constraint
     private double phone_number;
+
+    @Size(max = 200, message = "Address cannot exceed 200 characters")
     private String address;
+
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    @Column(unique = true)
     private String username;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
+
+    @NotBlank(message = "Role is required")
     private String role;
+
+    @Size(max = 50, message = "Position cannot exceed 50 characters")
     private String position;
+
+    @Size(max = 50, message = "Department cannot exceed 50 characters")
     private String department;
+
 
     public Long getId() {
         return id;
