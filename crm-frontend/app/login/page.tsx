@@ -1,26 +1,50 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Building2 } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, ArrowRight, Building2 } from 'lucide-react';
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      console.log('Login attempt:', formData);
-      // Here you'll integrate with your Spring Boot backend
-    }, 2000);
-  };
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    const params = new URLSearchParams();
+    params.append('username', formData.username);
+    params.append('password', formData.password);
+
+    const response = await fetch('http://localhost:8080/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      credentials: 'include',
+      body: params, // send as form data
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data.message); 
+      window.location.href = '/dashboard';
+    } else {
+      const errorData = await response.json();
+      setError(errorData.message || 'Login failed');
+    }
+  } catch (err) {
+    setError('An error occurred. Please try again.');
+    console.error('Login error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -73,20 +97,20 @@ export default function LoginForm() {
         {/* Login form */}
         <div className="bg-gradient-to-br from-white/25 via-white/20 to-white/15 backdrop-blur-2xl p-8 rounded-3xl border border-white/30 shadow-2xl shadow-black/25">
           <div className="space-y-6">
-            {/* Email field */}
+            {/* Username field */}
             <div className="space-y-2">
               <label className="text-white/90 text-sm font-medium block drop-shadow-sm">
-                Email Address
+                Username
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="username"
+                  value={formData.username}
                   onChange={handleInputChange}
                   className="w-full pl-12 pr-4 py-4 bg-white/30 border border-white/40 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/50 transition-all duration-300 backdrop-blur-sm shadow-sm"
-                  placeholder="Enter your email"
+                  placeholder="Enter your username"
                   required
                 />
               </div>
@@ -119,6 +143,11 @@ export default function LoginForm() {
               </div>
             </div>
 
+            {/* Error message */}
+            {error && (
+              <div className="text-red-400 text-sm text-center">{error}</div>
+            )}
+
             {/* Remember me & Forgot password */}
             <div className="flex items-center justify-between">
               <label className="flex items-center space-x-3 cursor-pointer">
@@ -150,23 +179,6 @@ export default function LoginForm() {
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </div>
               )}
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-gray-500 text-sm">or</span>
-            <div className="flex-1 border-t border-gray-300"></div>
-          </div>
-
-          {/* Social login options */}
-          <div className="space-y-3">
-            <button className="w-full bg-white/90 hover:bg-white border border-gray-200 text-gray-700 py-3 px-4 rounded-2xl transition-all duration-300 backdrop-blur-sm font-medium shadow-sm hover:shadow-md">
-              Continue with Google
-            </button>
-            <button className="w-full bg-white/90 hover:bg-white border border-gray-200 text-gray-700 py-3 px-4 rounded-2xl transition-all duration-300 backdrop-blur-sm font-medium shadow-sm hover:shadow-md">
-              Continue with Microsoft
             </button>
           </div>
         </div>
